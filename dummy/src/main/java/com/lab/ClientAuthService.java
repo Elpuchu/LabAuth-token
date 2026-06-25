@@ -9,7 +9,7 @@ public class ClientAuthService {
 
     private final Map<String, String> clients = Map.of(
       "orders-service", "1234",
-      "inventory-service",   "5678"
+      "users-service",   "abcd"
     );
 
     public boolean isValid(String clientId, String secret) {
