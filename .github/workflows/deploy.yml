@@ -14,6 +14,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install openssl (if needed)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openssl
+
+      # ✅ GENERAR CLAVES EN TIEMPO DE BUILD
+      - name: Generate JWT keys
+        working-directory: dummy
+        run: |
+          mkdir -p src/main/resources/keys
+          openssl genrsa -out src/main/resources/keys/private.pem 2048
+          openssl rsa -in src/main/resources/keys/private.pem -pubout -out src/main/resources/keys/public.pem
+          echo "✅ Claves generadas en $(pwd)/src/main/resources/keys/"
+          ls -la src/main/resources/keys/
+
       - name: Set image tag
         id: vars
         run: echo "TAG=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
