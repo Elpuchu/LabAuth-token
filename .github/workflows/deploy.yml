@@ -37,9 +37,28 @@ jobs:
         working-directory: dummy
         run: chmod +x mvnw
 
-      - name: Build Quarkus app
+      - name: Clean and Build Quarkus app
         working-directory: dummy
-        run: ./mvnw clean package -DskipTests
+        run: |
+          ./mvnw clean package -DskipTests
+          
+          # Verificar que las claves están en el JAR
+          echo "📋 Verificando claves en el JAR:"
+          jar tf target/*.jar | grep -E "keys/(private|public).pem"
+          
+          # Si no están, copiarlas manualmente
+          if ! jar tf target/*.jar | grep -q "keys/private.pem"; then
+            echo "⚠️ Las claves no están en el JAR. Copiando manualmente..."
+            mkdir -p target/classes/keys
+            cp src/main/resources/keys/* target/classes/keys/
+            jar uf target/*.jar -C target/classes/keys .
+          fi
+
+      - name: Verify keys in JAR (final)
+        working-directory: dummy
+        run: |
+          echo "✅ Verificación final de claves en el JAR:"
+          jar tf target/*.jar | grep -E "keys/(private|public).pem" && echo "✅ Claves encontradas" || echo "❌ Claves NO encontradas"
 
       - name: Build image
         working-directory: dummy
