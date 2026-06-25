@@ -43,8 +43,8 @@ jobs:
 
       - name: Apply Kubernetes manifests
         run: |
-          kubectl apply -f k8s/deployment.yaml -n cqrs-lab
-          kubectl apply -f k8s/service.yaml -n cqrs-lab
+          kubectl apply -f k8s/deployment-dummy-api-token.yaml -n cqrs-lab
+          kubectl apply -f k8s/service-dummy-api-token.yaml -n cqrs-lab
 
       - name: Update deployment image
         run: |
