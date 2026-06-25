@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dummy-api-token
+  namespace: cqrs-lab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dummy-api-token
+  template:
+    metadata:
+      labels:
+        app: dummy-api-token
+    spec:
+      containers:
+        - name: dummy-api-token
+          image: localhost/dummy-api-token:latest  # Se actualizará en el deploy
+          ports:
+            - containerPort: 8080
