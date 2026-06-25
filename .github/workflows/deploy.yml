@@ -8,7 +8,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: [self-hosted, dummy]
+    runs-on: [self-hosted, dummy-token]
 
     steps:
       - name: Checkout
