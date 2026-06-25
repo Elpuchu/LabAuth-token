@@ -1,0 +1,56 @@
+name: Deploy Token API
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, dummy]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set image tag
+        id: vars
+        run: echo "TAG=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
+      - name: Make mvnw executable
+        working-directory: dummy
+        run: chmod +x mvnw
+
+      - name: Build Quarkus app
+        working-directory: dummy
+        run: ./mvnw clean package -DskipTests
+
+      - name: Build image
+        working-directory: dummy
+        run: podman build --no-cache -t localhost/dummy-api:${TAG} .
+
+      - name: Save image
+        run: podman save localhost/dummy-api:${TAG} -o dummy-api.tar
+
+      - name: Import into k3s
+        run: sudo k3s ctr images import dummy-api.tar
+
+      - name: Create namespace
+        run: |
+          kubectl create namespace cqrs-lab \
+          --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Apply Kubernetes manifests
+        run: |
+          kubectl apply -f k8s/deployment.yaml -n cqrs-lab
+          kubectl apply -f k8s/service.yaml -n cqrs-lab
+
+      - name: Update deployment image
+        run: |
+          kubectl set image deployment/dummy-api \
+          dummy-api=localhost/dummy-api:${TAG} -n cqrs-lab
+
+      - name: Restart rollout
+        run: |
+          kubectl rollout status deployment/dummy-api -n cqrs-lab

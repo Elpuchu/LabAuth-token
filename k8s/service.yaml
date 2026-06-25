@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: dummy-api
+spec:
+  selector:
+    app: dummy-api
+  ports:
+    - port: 80
+      targetPort: 8080
